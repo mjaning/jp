@@ -6,19 +6,20 @@ $classLoader = new \Composer\Autoload\ClassLoader();
 $classLoader->addPsr4('', __DIR__, true);
 $classLoader->register();
 
-function autoload_dev($class_name): bool {
-    $split = explode('\\', $class_name);
-    $first = current($split);
+function autoload_dev($loading_namespace): bool {
+    $namespace_pieces = explode('\\', $loading_namespace);
+    $first = current($namespace_pieces);
+
     if ($first === '..') {
         return false;
     }
 
-    $clip = ($first === 'Test')
-        ? array_shift($split)
+    ($first === 'Test')
+        ? array_shift($namespace_pieces)
         : null;
 
     foreach(['./lib/','./test/_support/','./test/lib/'] as $prefix) {
-        $filename = $prefix . implode(DIRECTORY_SEPARATOR, $split) . '.php';
+        $filename = $prefix . implode(DIRECTORY_SEPARATOR, $namespace_pieces) . '.php';
         if (file_exists($filename)) {
             require_once($filename);
             return true;
