@@ -4,14 +4,14 @@ namespace JP\Loader;
 
 class AutoLoader {
 
-    private const MATCHING_WITH_ROOT_FOLDER_METHOD = 'matchingWithRootFolder';
-    private const MATCHING_WITH_FILE_EXTENSION_METHOD = 'matchingWithFileExtension';
-    private const REQUIRING_PHYSICAL_FILE_METHOD = 'requiringPhysicalFile';
+    private const MATCH_ROOT_FOLDERS_METHOD = 'matchRootFolders';
+    private const MATCH_FILE_EXTENSIONS_METHOD = 'matchFileExtensions';
+    private const REQUIRE_PHYSICAL_FILE_METHOD = 'requirePhysicalFile';
 
-    private const MATCHING_METHODS_ALLOWED = [
-        self::MATCHING_WITH_ROOT_FOLDER_METHOD,
-        self::MATCHING_WITH_FILE_EXTENSION_METHOD,
-        self::REQUIRING_PHYSICAL_FILE_METHOD,
+    private const MATCH_METHODS_ALLOWED = [
+        self::MATCH_ROOT_FOLDERS_METHOD,
+        self::MATCH_FILE_EXTENSIONS_METHOD,
+        self::REQUIRE_PHYSICAL_FILE_METHOD,
     ];
 
     private const DIRECTORY_SYMBOL = '..';
@@ -56,43 +56,43 @@ class AutoLoader {
     private static function matchAndRequireLoadingPath(string $loadingPath): bool {
         $match = false;
 
-        $match = $match ?: self::matchingWithRootFolder($loadingPath, self::MATCHING_WITH_FILE_EXTENSION_METHOD);
-        $match = $match ?: self::matchingWithRootFolder($loadingPath);
-        $match = $match ?: self::matchingWithFileExtension($loadingPath);
-        $match = $match ?: self::requiringPhysicalFile($loadingPath);
+        $match = $match ?: self::matchRootFolders($loadingPath, self::MATCH_FILE_EXTENSIONS_METHOD);
+        $match = $match ?: self::matchRootFolders($loadingPath);
+        $match = $match ?: self::matchFileExtensions($loadingPath);
+        $match = $match ?: self::requirePhysicalFile($loadingPath);
 
         return $match;
     }
 
-    private static function matchingWithRootFolder(string $loadingPath, ?string $cascadingMatch = null): bool {
-        $checkingMethod = in_array($cascadingMatch, self::MATCHING_METHODS_ALLOWED)
-            ? $cascadingMatch
-            : self::REQUIRING_PHYSICAL_FILE_METHOD;
+    private static function matchRootFolders(string $loadingPath, ?string $cascadeMatch = null): bool {
+        $matchMethod = in_array($cascadeMatch, self::MATCH_METHODS_ALLOWED)
+            ? $cascadeMatch
+            : self::REQUIRE_PHYSICAL_FILE_METHOD;
 
         $match = false;
         foreach (self::$REGISTERED_ROOT_FOLDERS as $rootFolder) {
-            $match = $match ?: self::{$checkingMethod}($rootFolder . $loadingPath);
+            $match = $match ?: self::{$matchMethod}($rootFolder . $loadingPath);
         }
 
         return $match;
     }
 
-    private static function matchingWithFileExtension(string $loadingPath, ?string $cascadingMatch = null): bool {
-        $checkingMethod = in_array($cascadingMatch, self::MATCHING_METHODS_ALLOWED)
-            ? $cascadingMatch
-            : self::REQUIRING_PHYSICAL_FILE_METHOD;
+    private static function matchFileExtensions(string $loadingPath, ?string $cascadeMethod = null): bool {
+        $matchMethod = in_array($cascadeMethod, self::MATCH_METHODS_ALLOWED)
+            ? $cascadeMethod
+            : self::REQUIRE_PHYSICAL_FILE_METHOD;
 
         $match = false;
         foreach (self::$REGISTERED_FILE_EXTENSIONS as $fileExtension) {
-            $match = $match ?: self::{$checkingMethod}($loadingPath . $fileExtension);
+            $match = $match ?: self::{$matchMethod}($loadingPath . $fileExtension);
         }
 
         return $match;
     }
 
-    private static function requiringPhysicalFile(string $matchingFilePath): bool {
-        if (file_exists($matchingFilePath)) {
-            require_once($matchingFilePath);
+    private static function requirePhysicalFile(string $matchFilePath): bool {
+        if (file_exists($matchFilePath)) {
+            require_once($matchFilePath);
             return true;
         }
 
