@@ -10,10 +10,10 @@ class YamlBurner {
 
 	private function __construct() {}
 
-    public static function burn(array $loaded_vars, array $replacing_vars = []): array {
-        self::$BURNED_VARS = $loaded_vars;
+    public static function burn(array $loadedVars, array $replacingVars = []): array {
+        self::$BURNED_VARS = $loadedVars;
 
-        self::replacingVars(self::$BURNED_VARS, $replacing_vars);
+        self::replacingVars(self::$BURNED_VARS, $replacingVars);
         self::cascadingMacroVars(self::$BURNED_VARS);
 
         return self::$BURNED_VARS;
@@ -27,14 +27,14 @@ class YamlBurner {
         return self::flatten_array(self::$BURNED_VARS);
     }
 
-    private static function replacingVars(array &$target, array $replacing_vars): void {
-        if (empty($replacing_vars)) {
+    private static function replacingVars(array &$target, array $replacingVars): void {
+        if (empty($replacingVars)) {
             return;
         }
-        array_walk($target, static function (&$value, $key) use ($replacing_vars) {
+        array_walk($target, static function (&$value, $key) use ($replacingVars) {
             (is_object($value) || is_array($value))
-                ? self::replacingVars($value, $replacing_vars)
-                : (array_key_exists($key, $replacing_vars) ? $value = $replacing_vars[$key] : null);
+                ? self::replacingVars($value, $replacingVars)
+                : (array_key_exists($key, $replacingVars) ? $value = $replacingVars[$key] : null);
         });
     }
 
@@ -47,7 +47,7 @@ class YamlBurner {
     }
 
     private static function macroReplace(string $content): string {
-        $burned_vars = self::flatten_array(self::$BURNED_VARS);
+        $burnedVars = self::flatten_array(self::$BURNED_VARS);
 
         [
             'macros' => $macros,
@@ -56,8 +56,8 @@ class YamlBurner {
 
 		foreach($macros as $i => $macro) {
             $key = $keys[$i];
-            (array_key_exists($key, $burned_vars))
-                ? $content = str_replace($macro, $burned_vars[$key], $content)
+            (array_key_exists($key, $burnedVars))
+                ? $content = str_replace($macro, $burnedVars[$key], $content)
                 : null;
 		}
 
